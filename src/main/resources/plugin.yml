@@ -1,0 +1,4 @@
+name: MinersFella
+version: 1
+main: com.velvetthebnuuy.minersfella.Main
+api-version: 1.21.4
