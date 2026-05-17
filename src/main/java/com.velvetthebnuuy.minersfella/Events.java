@@ -1,7 +1,6 @@
 package com.velvetthebnuuy.minersfella;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -43,7 +42,7 @@ public class Events implements Listener {
 		String type = block.getType().name();
 
 		List<String> visited = new ArrayList<>();
-		Queue<Block> queue = new ArrayDeque<Block>();
+		Queue<Block> queue = new ArrayDeque<>();
 		queue.offer(block);
 
 		int blockCount = 0;
@@ -52,8 +51,7 @@ public class Events implements Listener {
 			try {
 				Block curr = queue.peek();
 				Location loc = curr.getLocation();
-				String currLocation =
-					Double.toString(loc.getX()) + Double.toString(loc.getY()) + Double.toString(loc.getZ());
+				String currLocation = Double.toString(loc.getX()) + loc.getY() + loc.getZ();
 				visited.add(currLocation);
 
 				Block[] neighbours = {
@@ -68,8 +66,7 @@ public class Events implements Listener {
 				if (blockCount < blockLimit) {
 					for (Block neighbouringBlock : neighbours) {
 						loc = neighbouringBlock.getLocation();
-						currLocation =
-							Double.toString(loc.getX()) + Double.toString(loc.getY()) + Double.toString(loc.getZ());
+						currLocation = Double.toString(loc.getX()) + loc.getY() + loc.getZ();
 
 						boolean isSameType =
 							neighbouringBlock.getType().toString().equals(type) && !visited.contains(currLocation);
