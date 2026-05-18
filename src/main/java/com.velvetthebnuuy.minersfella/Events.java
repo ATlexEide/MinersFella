@@ -2,7 +2,6 @@ package com.velvetthebnuuy.minersfella;
 
 import java.util.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
@@ -41,7 +40,8 @@ public class Events implements Listener {
 	public void removeBlock(Block block) {
 		String type = block.getType().name();
 
-		List<String> visited = new ArrayList<>();
+		Dictionary<String, Boolean> visited = new Hashtable<>();
+
 		Queue<Block> queue = new ArrayDeque<>();
 		queue.offer(block);
 
@@ -50,28 +50,51 @@ public class Events implements Listener {
 		while (!queue.isEmpty()) {
 			try {
 				Block curr = queue.peek();
-				Location loc = curr.getLocation();
-				String currLocation = Double.toString(loc.getX()) + loc.getY() + loc.getZ();
-				visited.add(currLocation);
 
-				Block[] neighbours = {
-					curr.getRelative(BlockFace.UP),
-					curr.getRelative(BlockFace.DOWN),
-					curr.getRelative(BlockFace.NORTH),
-					curr.getRelative(BlockFace.SOUTH),
-					curr.getRelative(BlockFace.WEST),
-					curr.getRelative(BlockFace.EAST)
-				};
+				String currBlock = curr.toString();
+				visited.put(currBlock, true);
+
+				boolean isLog = curr.getType().toString().contains("LOG");
+				Block[] neighbours = new Block[isLog ? 22 : 6];
+				neighbours[0] = curr.getRelative(BlockFace.UP);
+				neighbours[1] = curr.getRelative(BlockFace.DOWN);
+				neighbours[2] = curr.getRelative(BlockFace.NORTH);
+				neighbours[3] = curr.getRelative(BlockFace.SOUTH);
+				neighbours[4] = curr.getRelative(BlockFace.WEST);
+				neighbours[5] = curr.getRelative(BlockFace.EAST);
+				if (isLog) {
+					//					Check for logs where the sides are not facing each other
+					//					(Offset by 1 in the middle, up and down)
+					//
+					neighbours[6] = curr.getRelative(1, 1, 0);
+					neighbours[7] = curr.getRelative(0, 1, 1);
+					neighbours[8] = curr.getRelative(-1, 1, 0);
+					neighbours[9] = curr.getRelative(0, 1, -1);
+
+					neighbours[10] = curr.getRelative(1, 1, 1);
+					neighbours[11] = curr.getRelative(-1, 1, 1);
+					neighbours[12] = curr.getRelative(1, 1, -1);
+					neighbours[13] = curr.getRelative(-1, 1, -1);
+
+					neighbours[14] = curr.getRelative(1, 0, 1);
+					neighbours[15] = curr.getRelative(-1, 0, 1);
+					neighbours[16] = curr.getRelative(1, 0, -1);
+					neighbours[17] = curr.getRelative(-1, 0, -1);
+
+					neighbours[18] = curr.getRelative(1, -1, 1);
+					neighbours[19] = curr.getRelative(-1, -1, 1);
+					neighbours[20] = curr.getRelative(1, -1, -1);
+					neighbours[21] = curr.getRelative(-1, -1, -1);
+				}
 
 				if (blockCount < blockLimit) {
 					for (Block neighbouringBlock : neighbours) {
-						loc = neighbouringBlock.getLocation();
-						currLocation = Double.toString(loc.getX()) + loc.getY() + loc.getZ();
+						currBlock = neighbouringBlock.toString();
 
-						boolean isSameType =
-							neighbouringBlock.getType().toString().equals(type) && !visited.contains(currLocation);
-						if (isSameType) {
-							visited.add(currLocation);
+						boolean isSameType = neighbouringBlock.getType().toString().equals(type);
+						boolean isVisited = (visited.get(currBlock)) != null;
+						if (isSameType && !isVisited) {
+							visited.put(currBlock, true);
 							queue.offer(neighbouringBlock);
 							blockCount++;
 						}
