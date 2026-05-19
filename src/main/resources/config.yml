@@ -1,0 +1,56 @@
+# Maximum blocks to remove
+block_limit: 100
+
+# Disable or Enable durability burn on tools
+durability_burn: true
+
+# Pickaxes allowed for vein mining
+allowed_pickaxes:
+  - "NETHERITE_PICKAXE"
+  - "DIAMOND_PICKAXE"
+  - "IRON_PICKAXE"
+  - "GOLDEN_PICKAXE"
+  - "STONE_PICKAXE"
+  - "WOODEN_PICKAXE"
+
+# Axes allowed for tree felling
+allowed_axes:
+  - "NETHERITE_AXE"
+  - "DIAMOND_AXE"
+  - "IRON_AXE"
+  - "GOLDEN_AXE"
+  - "STONE_AXE"
+  - "WOODEN_AXE"
+
+# Blocks chopped by any tool in "allowed_pickaxes"
+minable:
+  - "IRON_ORE"
+  - "DEEPSLATE_IRON_ORE"
+  - "COAL_ORE"
+  - "DEEPSLATE_COAL_ORE"
+  - "COPPER_ORE"
+  - "DEEPSLATE_COPPER_ORE"
+  - "GOLD_ORE"
+  - "DEEPSLATE_GOLD_ORE"
+  - "REDSTONE_ORE"
+  - "DEEPSLATE_REDSTONE_ORE"
+  - "EMERALD_ORE"
+  - "DEEPSLATE_EMERALD_ORE"
+  - "LAPIS_ORE"
+  - "DEEPSLATE_LAPIS_ORE"
+  - "DIAMOND_ORE"
+  - "DEEPSLATE_DIAMOND_ORE"
+  - "NETHER_QUARTZ_ORE"
+  - "NETHER_GOLD_ORE"
+
+  # Blocks chopped by any tool in "allowed_axes"
+choppable:
+  - "OAK_LOG"
+  - "SPRUCE_LOG"
+  - "BIRCH_LOG"
+  - "JUNGLE_LOG"
+  - "ACACIA_LOG"
+  - "DARK_OAK_LOG"
+  - "MANGROVE_LOG"
+  - "CHERRY_LOG"
+  - "PALE_OAK_LOG"
