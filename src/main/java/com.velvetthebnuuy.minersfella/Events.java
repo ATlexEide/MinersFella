@@ -13,7 +13,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public class Events implements Listener {
 
@@ -35,15 +34,14 @@ public class Events implements Listener {
 		Bukkit.getServer().broadcastMessage(drops.toString());
 
 		ItemStack itemInHand = Objects.requireNonNull(event.getPlayer().getEquipment()).getItemInMainHand();
-		//		if (Objects.requireNonNull(itemInHand.getItemMeta()).hasEnchants()) {
-		//			return;
-		//		}
+
 		int durability = itemInHand.getType().getMaxDurability();
 
 		String itemInHandName = itemInHand.getType().toString();
 		Bukkit.getServer().broadcastMessage(itemInHandName);
 
 		Damageable meta = (Damageable) itemInHand.getItemMeta();
+		assert meta != null;
 		int currDamage = meta.getDamage();
 
 		boolean isDurabilityBurnEnabled = cfg.getBoolean("durability_burn");
@@ -58,6 +56,48 @@ public class Events implements Listener {
 		Block block = event.getBlock();
 		String type = block.getType().toString();
 
+		Dictionary<String, String> ORE_TABLE = getStringOreTable();
+
+		boolean isVeinMinerEnabled = cfg.getBoolean("vein_miner");
+		boolean isTreeFellerEnabled = cfg.getBoolean("tree_feller");
+		boolean isLog = block.getType().toString().contains("LOG");
+		boolean isAllowedOre = MINABLE_BLOCKS.contains(block.getType().toString());
+		boolean isAllowedLog = CHOPPABLE_BLOCKS.contains(block.getType().toString());
+		boolean isAllowedPickaxe = ALLOWED_PICKAXES.contains(itemInHandName);
+		boolean isAllowedAxe = ALLOWED_AXES.contains(itemInHandName);
+		if ((!isLog && !isAllowedOre) || (!isLog && !isVeinMinerEnabled)) {
+			return;
+		}
+
+		if ((isLog && !isAllowedLog) || (isLog && !isTreeFellerEnabled)) {
+			return;
+		}
+		if ((!isLog && !isAllowedPickaxe) || (isLog && !isAllowedAxe)) {
+			return;
+		}
+
+		Dictionary<String, Integer> removalResult = removeBlock(block, isLog, BLOCK_LIMIT, type, itemInHand);
+		int totalBlocks = removalResult.get("totalBlocks");
+		int totalDrops = removalResult.get("totalDrops");
+		if (isDurabilityBurnEnabled) {
+			int newDamage = currDamage + totalBlocks;
+
+			if (newDamage >= durability) {
+				Player player = event.getPlayer();
+				player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1F, 1F);
+				player.getInventory().removeItem(itemInHand);
+			} else {
+				meta.setDamage(newDamage);
+				itemInHand.setItemMeta(meta);
+			}
+		}
+		ItemStack item = type.contains("ORE")
+			? new ItemStack(Objects.requireNonNull(Material.getMaterial(ORE_TABLE.get(type))), totalDrops)
+			: new ItemStack(Objects.requireNonNull(Material.getMaterial(type)), totalDrops);
+		event.getPlayer().getInventory().addItem(item);
+	}
+
+	private static Dictionary<String, String> getStringOreTable() {
 		Dictionary<String, String> ORE_TABLE = new Hashtable<>();
 		ORE_TABLE.put("IRON_ORE", "RAW_IRON");
 		ORE_TABLE.put("DEEPSLATE_IRON_ORE", "RAW_IRON");
@@ -77,45 +117,8 @@ public class Events implements Listener {
 		ORE_TABLE.put("LAPIS_ORE", "LAPIS_LAZULI");
 		ORE_TABLE.put("DEEPSLATE_LAPIS_ORE", "LAPIS_LAZULI");
 		ORE_TABLE.put("NETHER_QUARTZ_ORE", "QUARTZ");
-
-		boolean isLog = block.getType().toString().contains("LOG");
-		boolean isAllowedOre = MINABLE_BLOCKS.contains(block.getType().toString());
-		boolean isAllowedLog = CHOPPABLE_BLOCKS.contains(block.getType().toString());
-		boolean isAllowedPickaxe = ALLOWED_PICKAXES.contains(itemInHandName);
-		boolean isAllowedAxe = ALLOWED_AXES.contains(itemInHandName);
-		if (!isLog && !isAllowedOre) {
-			return;
-		}
-
-		if (isLog && !isAllowedLog) {
-			return;
-		}
-		if ((!isLog && !isAllowedPickaxe) || (isLog && !isAllowedAxe)) {
-			return;
-		}
-
-		Dictionary<String, Integer> removalResult = removeBlock(block, isLog, BLOCK_LIMIT, type, itemInHand);
-		int totalBlocks = removalResult.get("totalBlocks");
-		int totalDrops = removalResult.get("totalDrops");
-		if (isDurabilityBurnEnabled) {
-			int newDamage = currDamage + totalBlocks;
-
-			if (newDamage >= durability) {
-				Player player = event.getPlayer();
-				player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1F, 1F);
-				player.getInventory().removeItem(itemInHand);
-			} else {
-				meta.setDamage(newDamage);
-				itemInHand.setItemMeta((ItemMeta) meta);
-			}
-		}
-		ItemStack item = type.contains("ORE")
-			? new ItemStack(Objects.requireNonNull(Material.getMaterial(ORE_TABLE.get(type))), totalDrops)
-			: new ItemStack(Objects.requireNonNull(Material.getMaterial(type)), totalDrops);
-		event.getPlayer().getInventory().addItem(item);
+		return ORE_TABLE;
 	}
-
-	public void breakItem(Player player, ItemStack item) {}
 
 	public Dictionary<String, Integer> removeBlock(
 		Block block,
