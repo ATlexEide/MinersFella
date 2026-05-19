@@ -2,59 +2,129 @@ package com.velvetthebnuuy.minersfella;
 
 import java.util.*;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public class Events implements Listener {
 
-	int sum = 0;
+	private final Main plugin;
+
+	public Events(Main plugin) {
+		this.plugin = plugin;
+	}
 
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
-		sum = 0;
-		String itemInHand = Objects
-			.requireNonNull(event.getPlayer().getEquipment())
-			.getItemInMainHand()
-			.getType()
-			.toString();
-		List<String> ALLOWED_TOOLS = Arrays.asList(
-			"NETHERITE_PICKAXE",
-			"STONE_PICKAXE",
-			"IRON_PICKAXE",
-			"GOLDEN_PICKAXE",
-			"WOODEN_PICKAXE",
-			"DIAMOND_PICKAXE"
-		);
-		if (!ALLOWED_TOOLS.contains(itemInHand)) {
+		FileConfiguration cfg = this.plugin.getConfig();
+		String test = event.getBlock().getType().toString();
+		Bukkit.getServer().broadcastMessage(test);
+
+		ItemStack itemInHand = Objects.requireNonNull(event.getPlayer().getEquipment()).getItemInMainHand();
+		if (Objects.requireNonNull(itemInHand.getItemMeta()).hasEnchants()) {
+			return;
+		}
+		int durability = itemInHand.getType().getMaxDurability();
+
+		String itemInHandName = itemInHand.getType().toString();
+		Bukkit.getServer().broadcastMessage(itemInHandName);
+
+		Damageable meta = (Damageable) itemInHand.getItemMeta();
+		int currDamage = meta.getDamage();
+
+		boolean isDurabilityBurnEnabled = cfg.getBoolean("durability_burn");
+		int cfg_block_limit = cfg.getInt("block_limit");
+		int BLOCK_LIMIT = isDurabilityBurnEnabled
+			? Math.min(durability - currDamage, cfg_block_limit)
+			: cfg_block_limit;
+		List<String> MINABLE_BLOCKS = cfg.getStringList("minable");
+		List<String> CHOPPABLE_BLOCKS = cfg.getStringList("choppable");
+		List<String> ALLOWED_PICKAXES = cfg.getStringList("allowed_pickaxes");
+		List<String> ALLOWED_AXES = cfg.getStringList("allowed_axes");
+		Block block = event.getBlock();
+		String type = block.getType().toString();
+
+		Dictionary<String, String> ORE_TABLE = new Hashtable<>();
+		ORE_TABLE.put("IRON_ORE", "RAW_IRON");
+		ORE_TABLE.put("DEEPSLATE_IRON_ORE", "RAW_IRON");
+		ORE_TABLE.put("GOLD_ORE", "RAW_GOLD");
+		ORE_TABLE.put("NETHER_GOLD_ORE", "GOLD_NUGGET");
+		ORE_TABLE.put("DEEPSLATE_GOLD_ORE", "RAW_GOLD");
+		ORE_TABLE.put("COPPER_ORE", "RAW_COPPER");
+		ORE_TABLE.put("DEEPSLATE_COPPER_ORE", "RAW_COPPER");
+		ORE_TABLE.put("DIAMOND_ORE", "DIAMOND");
+		ORE_TABLE.put("DEEPSLATE_DIAMOND_ORE", "DIAMOND");
+		ORE_TABLE.put("COAL_ORE", "COAL");
+		ORE_TABLE.put("DEEPSLATE_COAL_ORE", "COAL");
+		ORE_TABLE.put("REDSTONE_ORE", "REDSTONE_DUST");
+		ORE_TABLE.put("DEEPSLATE_REDSTONE_ORE", "REDSTONE_DUST");
+		ORE_TABLE.put("EMERALD_ORE", "EMERALD");
+		ORE_TABLE.put("DEEPSLATE_EMERALD_ORE", "EMERALD");
+		ORE_TABLE.put("LAPIS_ORE", "LAPIS_LAZULI");
+		ORE_TABLE.put("DEEPSLATE_LAPIS_ORE", "LAPIS_LAZULI");
+		ORE_TABLE.put("NETHER_QUARTZ_ORE", "QUARTZ");
+
+		boolean isLog = block.getType().toString().contains("LOG");
+		boolean isAllowedOre = MINABLE_BLOCKS.contains(block.getType().toString());
+		boolean isAllowedLog = CHOPPABLE_BLOCKS.contains(block.getType().toString());
+		boolean isAllowedPickaxe = ALLOWED_PICKAXES.contains(itemInHandName);
+		boolean isAllowedAxe = ALLOWED_AXES.contains(itemInHandName);
+		if (!isLog && !isAllowedOre) {
 			return;
 		}
 
-		Block block = event.getBlock();
+		if (isLog && !isAllowedLog) {
+			return;
+		}
+		if ((!isLog && !isAllowedPickaxe) || (isLog && !isAllowedAxe)) {
+			return;
+		}
 
-		removeBlock(block);
+		int blockCount = 0;
+		int blocksToRemove = removeBlock(block, isLog, BLOCK_LIMIT, blockCount, type);
+		if (isDurabilityBurnEnabled) {
+			int newDamage = currDamage + blocksToRemove;
+
+			if (newDamage >= durability) {
+				Player player = event.getPlayer();
+				player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1F, 1F);
+				player.getInventory().removeItem(itemInHand);
+			} else {
+				meta.setDamage(newDamage);
+				itemInHand.setItemMeta((ItemMeta) meta);
+			}
+		}
+		ItemStack item = type.contains("ORE")
+			? new ItemStack(Objects.requireNonNull(Material.getMaterial(ORE_TABLE.get(type))), blocksToRemove)
+			: new ItemStack(Objects.requireNonNull(Material.getMaterial(type)), blocksToRemove);
+		event.getPlayer().getInventory().addItem(item);
 	}
 
-	public void removeBlock(Block block) {
-		String type = block.getType().name();
+	public void breakItem(Player player, ItemStack item) {}
 
-		Dictionary<String, Boolean> visited = new Hashtable<>();
-
+	public int removeBlock(Block block, boolean isLog, int blockLimit, int blockCount, String type) {
+		Set<String> visited = new HashSet<>();
 		Queue<Block> queue = new ArrayDeque<>();
 		queue.offer(block);
 
-		int blockCount = 0;
-		int blockLimit = 10000;
+		blockCount = 1;
 		while (!queue.isEmpty()) {
 			try {
 				Block curr = queue.peek();
 
 				String currBlock = curr.toString();
-				visited.put(currBlock, true);
+				visited.add(currBlock);
+				//				visited.add(currBlock);
 
-				boolean isLog = curr.getType().toString().contains("LOG");
 				Block[] neighbours = new Block[isLog ? 22 : 6];
 				neighbours[0] = curr.getRelative(BlockFace.UP);
 				neighbours[1] = curr.getRelative(BlockFace.DOWN);
@@ -92,19 +162,24 @@ public class Events implements Listener {
 						currBlock = neighbouringBlock.toString();
 
 						boolean isSameType = neighbouringBlock.getType().toString().equals(type);
-						boolean isVisited = (visited.get(currBlock)) != null;
+						boolean isVisited = (visited.contains(currBlock));
+
 						if (isSameType && !isVisited) {
-							visited.put(currBlock, true);
+							visited.add(currBlock);
+
 							queue.offer(neighbouringBlock);
 							blockCount++;
 						}
 					}
 				}
-				curr.breakNaturally();
+
+				curr.setType(Material.AIR);
 				queue.remove();
 			} catch (Exception e) {
 				Bukkit.getLogger().warning(e.getMessage());
 			}
 		}
+		Bukkit.getServer().broadcastMessage("Blocks: " + blockCount);
+		return blockCount;
 	}
 }
