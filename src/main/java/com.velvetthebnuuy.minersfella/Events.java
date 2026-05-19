@@ -80,9 +80,8 @@ public class Events implements Listener {
 		int totalBlocks = removalResult.get("totalBlocks");
 		int totalDrops = removalResult.get("totalDrops");
 
+		int newDamage = currDamage + totalBlocks;
 		if (isDurabilityBurnEnabled) {
-			int newDamage = currDamage + totalBlocks;
-
 			if (newDamage >= durability) {
 				Player player = event.getPlayer();
 				player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1F, 1F);
@@ -91,6 +90,9 @@ public class Events implements Listener {
 				meta.setDamage(newDamage);
 				itemInHand.setItemMeta(meta);
 			}
+		} else {
+			meta.setDamage(currDamage + 1);
+			itemInHand.setItemMeta(meta);
 		}
 
 		ItemStack item = type.contains("ORE")
