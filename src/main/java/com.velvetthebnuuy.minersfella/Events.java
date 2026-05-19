@@ -29,16 +29,10 @@ public class Events implements Listener {
 			return;
 		}
 		FileConfiguration cfg = this.plugin.getConfig();
-		String test = event.getBlock().getType().toString();
-		Bukkit.getServer().broadcastMessage(test);
-		Bukkit.getServer().broadcastMessage(drops.toString());
 
 		ItemStack itemInHand = Objects.requireNonNull(event.getPlayer().getEquipment()).getItemInMainHand();
-
-		int durability = itemInHand.getType().getMaxDurability();
-
 		String itemInHandName = itemInHand.getType().toString();
-		Bukkit.getServer().broadcastMessage(itemInHandName);
+		int durability = itemInHand.getType().getMaxDurability();
 
 		Damageable meta = (Damageable) itemInHand.getItemMeta();
 		assert meta != null;
@@ -205,8 +199,7 @@ public class Events implements Listener {
 				Bukkit.getLogger().warning(e.getMessage());
 			}
 		}
-		Bukkit.getServer().broadcastMessage("Blocks: " + blockCount);
-		Bukkit.getServer().broadcastMessage("Drops: " + totalDrop);
+
 		Dictionary<String, Integer> result = new Hashtable<>();
 		result.put("totalBlocks", blockCount);
 		result.put("totalDrops", totalDrop);

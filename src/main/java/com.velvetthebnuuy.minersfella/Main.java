@@ -9,11 +9,11 @@ public class Main extends JavaPlugin {
 	public void onEnable() {
 		saveDefaultConfig();
 		Bukkit.getPluginManager().registerEvents(new Events(this), this);
-		getLogger().info("YAYYYYY!");
+		getLogger().info("Ready to mine :3 !");
 	}
 
 	@Override
 	public void onDisable() {
-		getLogger().info("onDisable is called!");
+		getLogger().info("Plugin shutting down...");
 	}
 }
