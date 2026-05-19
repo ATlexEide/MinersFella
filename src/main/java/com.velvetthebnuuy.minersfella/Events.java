@@ -25,9 +25,14 @@ public class Events implements Listener {
 
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
+		Collection<ItemStack> drops = event.getBlock().getDrops(event.getPlayer().getInventory().getItemInMainHand());
+		if (drops.isEmpty()) {
+			return;
+		}
 		FileConfiguration cfg = this.plugin.getConfig();
 		String test = event.getBlock().getType().toString();
 		Bukkit.getServer().broadcastMessage(test);
+		Bukkit.getServer().broadcastMessage(drops.toString());
 
 		ItemStack itemInHand = Objects.requireNonNull(event.getPlayer().getEquipment()).getItemInMainHand();
 		if (Objects.requireNonNull(itemInHand.getItemMeta()).hasEnchants()) {
