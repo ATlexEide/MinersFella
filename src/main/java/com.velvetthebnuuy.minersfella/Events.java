@@ -79,6 +79,7 @@ public class Events implements Listener {
 		Dictionary<String, Integer> removalResult = removeBlock(block, isLog, BLOCK_LIMIT, type, itemInHand);
 		int totalBlocks = removalResult.get("totalBlocks");
 		int totalDrops = removalResult.get("totalDrops");
+
 		if (isDurabilityBurnEnabled) {
 			int newDamage = currDamage + totalBlocks;
 
@@ -91,10 +92,12 @@ public class Events implements Listener {
 				itemInHand.setItemMeta(meta);
 			}
 		}
+
 		ItemStack item = type.contains("ORE")
 			? new ItemStack(Objects.requireNonNull(Material.getMaterial(ORE_TABLE.get(type))), totalDrops)
 			: new ItemStack(Objects.requireNonNull(Material.getMaterial(type)), totalDrops);
-		event.getPlayer().getInventory().addItem(item);
+
+		event.getPlayer().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
 	}
 
 	private static Dictionary<String, String> getStringOreTable() {
