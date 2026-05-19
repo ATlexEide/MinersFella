@@ -35,9 +35,9 @@ public class Events implements Listener {
 		Bukkit.getServer().broadcastMessage(drops.toString());
 
 		ItemStack itemInHand = Objects.requireNonNull(event.getPlayer().getEquipment()).getItemInMainHand();
-		if (Objects.requireNonNull(itemInHand.getItemMeta()).hasEnchants()) {
-			return;
-		}
+		//		if (Objects.requireNonNull(itemInHand.getItemMeta()).hasEnchants()) {
+		//			return;
+		//		}
 		int durability = itemInHand.getType().getMaxDurability();
 
 		String itemInHandName = itemInHand.getType().toString();
@@ -94,10 +94,11 @@ public class Events implements Listener {
 			return;
 		}
 
-		int blockCount = 0;
-		int blocksToRemove = removeBlock(block, isLog, BLOCK_LIMIT, blockCount, type);
+		Dictionary<String, Integer> removalResult = removeBlock(block, isLog, BLOCK_LIMIT, type, itemInHand);
+		int totalBlocks = removalResult.get("totalBlocks");
+		int totalDrops = removalResult.get("totalDrops");
 		if (isDurabilityBurnEnabled) {
-			int newDamage = currDamage + blocksToRemove;
+			int newDamage = currDamage + totalBlocks;
 
 			if (newDamage >= durability) {
 				Player player = event.getPlayer();
@@ -109,22 +110,34 @@ public class Events implements Listener {
 			}
 		}
 		ItemStack item = type.contains("ORE")
-			? new ItemStack(Objects.requireNonNull(Material.getMaterial(ORE_TABLE.get(type))), blocksToRemove)
-			: new ItemStack(Objects.requireNonNull(Material.getMaterial(type)), blocksToRemove);
+			? new ItemStack(Objects.requireNonNull(Material.getMaterial(ORE_TABLE.get(type))), totalDrops)
+			: new ItemStack(Objects.requireNonNull(Material.getMaterial(type)), totalDrops);
 		event.getPlayer().getInventory().addItem(item);
 	}
 
 	public void breakItem(Player player, ItemStack item) {}
 
-	public int removeBlock(Block block, boolean isLog, int blockLimit, int blockCount, String type) {
+	public Dictionary<String, Integer> removeBlock(
+		Block block,
+		boolean isLog,
+		int blockLimit,
+		String type,
+		ItemStack itemInHand
+	) {
 		Set<String> visited = new HashSet<>();
 		Queue<Block> queue = new ArrayDeque<>();
 		queue.offer(block);
 
-		blockCount = 1;
+		int blockCount = 1;
+		int totalDrop = 0;
 		while (!queue.isEmpty()) {
 			try {
 				Block curr = queue.peek();
+				Collection<ItemStack> drop = curr.getDrops(itemInHand);
+				ItemStack[] dropArr = new ItemStack[1];
+				drop.toArray(dropArr);
+				int dropAmount = dropArr[0].getAmount();
+				totalDrop += dropAmount;
 
 				String currBlock = curr.toString();
 				visited.add(currBlock);
@@ -185,6 +198,10 @@ public class Events implements Listener {
 			}
 		}
 		Bukkit.getServer().broadcastMessage("Blocks: " + blockCount);
-		return blockCount;
+		Bukkit.getServer().broadcastMessage("Drops: " + totalDrop);
+		Dictionary<String, Integer> result = new Hashtable<>();
+		result.put("totalBlocks", blockCount);
+		result.put("totalDrops", totalDrop);
+		return result;
 	}
 }
