@@ -1,3 +1,20 @@
+# REMOVE THE "#" IN FRONT OF A LINE TO ENABLE
+# ADD A "#" IN FRONT OF A LINE TO DISABLE
+#
+#
+#      (\
+#       \)_
+#       ( _\      Plugin by
+#       / \__      VelvetTheBnuuy
+#      / _/`"`
+#    {\  )__
+#WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+#WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+
+# Enable/Disable vein miner and tree feller
+vein_miner: true
+tree_feller: true
+
 # Maximum blocks to remove
 block_limit: 100
 
@@ -8,19 +25,19 @@ durability_burn: true
 allowed_pickaxes:
   - "NETHERITE_PICKAXE"
   - "DIAMOND_PICKAXE"
-  - "IRON_PICKAXE"
-  - "GOLDEN_PICKAXE"
-  - "STONE_PICKAXE"
-  - "WOODEN_PICKAXE"
+  #- "IRON_PICKAXE"
+  #- "GOLDEN_PICKAXE"
+  #- "STONE_PICKAXE"
+  #- "WOODEN_PICKAXE"
 
 # Axes allowed for tree felling
 allowed_axes:
   - "NETHERITE_AXE"
   - "DIAMOND_AXE"
-  - "IRON_AXE"
-  - "GOLDEN_AXE"
-  - "STONE_AXE"
-  - "WOODEN_AXE"
+  #- "IRON_AXE"
+  #- "GOLDEN_AXE"
+  #- "STONE_AXE"
+  #- "WOODEN_AXE"
 
 # Blocks chopped by any tool in "allowed_pickaxes"
 minable:
@@ -43,7 +60,7 @@ minable:
   - "NETHER_QUARTZ_ORE"
   - "NETHER_GOLD_ORE"
 
-  # Blocks chopped by any tool in "allowed_axes"
+# Blocks chopped by any tool in "allowed_axes"
 choppable:
   - "OAK_LOG"
   - "SPRUCE_LOG"
