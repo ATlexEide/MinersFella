@@ -39,7 +39,7 @@ allowed_axes:
   #- "STONE_AXE"
   #- "WOODEN_AXE"
 
-# Blocks chopped by any tool in "allowed_pickaxes"
+# Blocks mined by any tool in "allowed_pickaxes"
 minable:
   - "IRON_ORE"
   - "DEEPSLATE_IRON_ORE"
