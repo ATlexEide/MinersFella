@@ -16,7 +16,7 @@ vein_miner: true
 tree_feller: true
 
 # Maximum blocks to remove
-block_limit: 100
+block_limit: 200
 
 # Disable or Enable durability burn on tools
 durability_burn: true
