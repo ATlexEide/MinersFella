@@ -211,14 +211,22 @@ public class Events implements Listener {
 	}
 
 	public boolean checkIsTree(Block block, int maxSize) {
-		Block neighbourTop = block.getRelative(BlockFace.UP);
-
-		if (neighbourTop.getType().toString().contains("LEAVES")) {
-			return true;
-		} else if (maxSize <= 0) {
-			return false;
+		boolean isTree = false;
+		int airCount = 0;
+		for (int i = 1; i < maxSize; i++) {
+			String currBlockType = block.getRelative(0, i, 0).getType().toString();
+			Bukkit.getServer().broadcastMessage(String.valueOf(i));
+			if (currBlockType.contains("AIR")) {
+				airCount++;
+			}
+			if (airCount > 5) {
+				break;
+			}
+			if (currBlockType.contains("LEAVES")) {
+				isTree = true;
+				break;
+			}
 		}
-
-		return checkIsTree(neighbourTop, maxSize - 1);
+		return isTree;
 	}
 }
