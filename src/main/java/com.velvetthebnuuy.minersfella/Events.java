@@ -214,12 +214,8 @@ public class Events implements Listener {
 		Block neighbourTop = block.getRelative(BlockFace.UP);
 
 		if (neighbourTop.getType().toString().contains("LEAVES")) {
-			Bukkit.getServer().broadcastMessage("TREE");
-			Bukkit.getServer().broadcastMessage(String.valueOf(70 - maxSize));
 			return true;
 		} else if (maxSize <= 0) {
-			Bukkit.getServer().broadcastMessage("NOT TREE");
-			Bukkit.getServer().broadcastMessage(String.valueOf(70 - maxSize));
 			return false;
 		}
 
