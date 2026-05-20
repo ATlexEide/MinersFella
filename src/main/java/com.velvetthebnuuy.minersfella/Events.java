@@ -70,6 +70,10 @@ public class Events implements Listener {
 			return;
 		}
 
+		if (isLog && !checkIsTree(block, 100)) {
+			return;
+		}
+
 		Dictionary<String, Integer> removalResult = removeBlock(block, isLog, BLOCK_LIMIT, type, itemInHand);
 		int totalBlocks = removalResult.get("totalBlocks");
 		int totalDrops = removalResult.get("totalDrops");
@@ -204,5 +208,21 @@ public class Events implements Listener {
 		result.put("totalBlocks", blockCount);
 		result.put("totalDrops", totalDrop);
 		return result;
+	}
+
+	public boolean checkIsTree(Block block, int maxSize) {
+		Block neighbourTop = block.getRelative(BlockFace.UP);
+
+		if (neighbourTop.getType().toString().contains("LEAVES")) {
+			Bukkit.getServer().broadcastMessage("TREE");
+			Bukkit.getServer().broadcastMessage(String.valueOf(70 - maxSize));
+			return true;
+		} else if (maxSize <= 0) {
+			Bukkit.getServer().broadcastMessage("NOT TREE");
+			Bukkit.getServer().broadcastMessage(String.valueOf(70 - maxSize));
+			return false;
+		}
+
+		return checkIsTree(neighbourTop, maxSize - 1);
 	}
 }
